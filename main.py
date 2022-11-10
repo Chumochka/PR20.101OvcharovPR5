@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 from RandomWordGenerator import RandomWord
 import asyncio
-
+from concurrent.futures import ProcessPoolExecutor
+executor = ProcessPoolExecutor(max_workers=4)
 PATH_TO_DIR = "./result_files"
 
 TIMES_WAIT :List[float] = [
@@ -81,7 +82,8 @@ async def process_request(time_wait :float):
     id_request :uuid.UUID = uuid.uuid4()   
     responce :str = await send_request(id_request, time_wait)
     count_word :int = await parse_response(id_request, responce, time_wait)
-    path_to_file :str = generate_file(id_request, count_word)
+    loop = asyncio.get_event_loop()
+    path_to_file :str = await loop.run_in_executor(executor, generate_file, id_request,count_word)
     output_responce(id_request, path_to_file)
 
 async def main():
